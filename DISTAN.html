@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor IoT - Sensores</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .sensor-title {
+            color: var(--primary);
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sensor-icon {
+            font-size: 24px;
+        }
+
+        .data-value {
+            font-size: 2.5em;
+            color: var(--secondary);
+            margin: 10px 0;
+        }
+
+        .data-unit {
+            font-size: 0.8em;
+            color: #7f8c8d;
+        }
+
+        .timestamp {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2 class="sensor-title">
+                <span class="sensor-icon">📏</span>
+                Distancia
+            </h2>
+            <div class="data-value" id="distancia">--</div>
+            <div class="data-info">
+                <span id="letra" class="data-unit"></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="sensor-title">
+                <span class="sensor-icon">🌡️</span>
+                Temperatura
+            </h2>
+            <div class="data-value" id="temperatura">--</div>
+            <div class="data-unit">°C</div>
+        </div>
+
+        <div class="card">
+            <h2 class="sensor-title">
+                <span class="sensor-icon">💧</span>
+                Humedad
+            </h2>
+            <div class="data-value" id="humedad">--</div>
+            <div class="data-unit">%</div>
+        </div>
+    </div>
+    <div class="timestamp" id="timestamp"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDmZ3GGbbVj-zVCATbsmEZEufKyDDWQntc",
+            authDomain: "distancesp-59260.firebaseapp.com",
+            databaseURL: "https://distancesp-59260-default-rtdb.firebaseio.com",
+            projectId: "distancesp-59260",
+            storageBucket: "distancesp-59260.firebasestorage.app",
+            messagingSenderId: "330355296839",
+            appId: "1:330355296839:web:fe8dfb13fa7ac888c7ff62",
+            measurementId: "G-ZDXVWFWCME"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('sensores').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const fecha = new Date(data.timestamp);
+            
+            // Actualizar datos
+            document.getElementById('distancia').innerHTML = 
+                `${data.distancia.toFixed(1)}<span class="data-unit"> cm</span>`;
+            
+            document.getElementById('temperatura').innerHTML = 
+                `${data.temperatura.toFixed(1)}<span class="data-unit"> °C</span>`;
+            
+            document.getElementById('humedad').innerHTML = 
+                `${data.humedad.toFixed(1)}<span class="data-unit"> %</span>`;
+            
+            document.getElementById('timestamp').textContent = 
+                `Última actualización: ${fecha.toLocaleString()}`;
+
+            // Actualizar letra
+            const letras = ['A', 'b', 'C', 'd', 'E', 'F', 'g', 'H', 'J', '-'];
+            const rangos = [5, 15, 25, 35, 45, 55, 65, 75, 85, 100];
+            const letraIndex = rangos.findIndex(rango => data.distancia <= rango);
+            document.getElementById('letra').textContent = 
+                letraIndex !== -1 ? letras[letraIndex] : '-';
+        });
+    </script>
+</body>
+</html>
